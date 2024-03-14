@@ -72,9 +72,14 @@ test('buy-ucg', async ({ page, request }) => {
   await page.getByText("Pay Now", {exact: true}).click();
   console.log("Paid");
 
-  await page.waitForLoadState("load");
+  var payresponse = await page.waitForResponse(response => response.url().startsWith('https://api.stripe.com/v1/payment_intents/') && response.url().endsWith('/confirm'));
+  if (payresponse.status() < 200 || payresponse.status() >= 300)
+  {
+    console.log("Payment failed: " + payresponse.status());
+    expect(false).toBeTruthy();
+  }
 
-  await request.put("https://ucgbot.azurewebsites.net/api/bought");
-  console.log("UCG purchase complete");
+  var response = await request.put("https://ucgbot.azurewebsites.net/api/bought");
+  console.log("UCG purchase complete: " + response.status());
   expect(true).toBeTruthy();
 });

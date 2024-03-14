@@ -2,12 +2,11 @@ import { test, expect } from '@playwright/test';
 test('buy-ucg', async ({ page, request }) => {
 
   //TODO: call function endpoint to check if you have already bought one.
-  var response = await request.get("https://ucgbot.azurewebsites.net/api/status?code=VCGTOwSoy_T1E0uExTj-kGgp0nt4ctd4i1eUX1VspyTyAzFu2uKy8w==");
+  var response = await request.get("https://ucgbot.azurewebsites.net/api/status");
   if ((await response.status()) == 201)
   {
     console.log("Already bought UCG");
     expect(true).toBeTruthy();
-    return;
   }
 
   await page.goto('https://store.ui.com/us/en/pro/category/all-unifi-cloud-gateways/products/ucg-ultra');
@@ -17,7 +16,6 @@ test('buy-ucg', async ({ page, request }) => {
   {
     console.log("UCG currently sold out");
     expect(false).toBeTruthy();
-    return;
   }
   await page.getByRole("button").getByText("Add to Cart").click();
   console.log("UCG in cart");
@@ -39,6 +37,11 @@ test('buy-ucg', async ({ page, request }) => {
     var ccnum = process.env.CCNUM || '';
     await frame.getByLabel("Credit or debit card number").fill(ccnum);
   }
+  else
+  {
+    console.log("Card number frame not found");
+    expect(false).toBeTruthy();
+  }
 
   var frame = await page.getByTitle("Secure CVC input frame").frameLocator(":scope");
   if (frame != null)
@@ -46,6 +49,11 @@ test('buy-ucg', async ({ page, request }) => {
     console.log("Filling in cvc");
     var cvc = process.env.CVC || '';
     await frame.getByLabel("Credit or debit card CVC/CVV").fill(cvc);
+  }
+  else
+  {
+    console.log("CVC number frame not found");
+    expect(false).toBeTruthy();
   }
 
   var frame = await page.getByTitle("Secure expiration date input frame").frameLocator(":scope");
@@ -55,13 +63,18 @@ test('buy-ucg', async ({ page, request }) => {
     var exp = process.env.CCEXP || '';
     await frame.getByLabel("Credit or debit card expiration date").fill(exp);
   }
+  else
+  {
+    console.log("Card expiration frame not found");
+    expect(false).toBeTruthy();
+  }
   
   await page.getByText("Pay Now", {exact: true}).click();
   console.log("Paid");
 
-  await page.waitForURL("https://store.ui.com/us/en/checkout/thank-you");
+  await page.waitForLoadState("load");
 
-  await request.put("https://ucgbot.azurewebsites.net/api/bought?code=Nn81x7TVTI43DHsGo4ZmtlNjXrWZyk3yGfk0S3gI_1N8AzFuX5x2CA==");
+  await request.put("https://ucgbot.azurewebsites.net/api/bought");
   console.log("UCG purchase complete");
   expect(true).toBeTruthy();
 });

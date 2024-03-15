@@ -1,14 +1,19 @@
 import { test, expect } from '@playwright/test';
-test('buy-ucg', async ({ page, request }) => {
 
-  //TODO: call function endpoint to check if you have already bought one.
-  var response = await request.get("https://ucgbot.azurewebsites.net/api/status");
-  if ((await response.status()) == 201)
+test('buy-ucg', async ({ page, request }) => {
+  const fs = require('fs');  
+
+  // Check if we already bought the UCG
+  var bought = await fs.readFileSync('state/bought.txt', 'utf8');
+  if (bought == "true")
   {
     console.log("Already bought UCG");
     expect(true).toBeTruthy();
+    return;
   }
+  console.log("UCG not bought, checking availability");
 
+  // Check if it's in stock
   await page.goto('https://store.ui.com/us/en/pro/category/all-unifi-cloud-gateways/products/ucg-ultra');
 
   var button = await page.getByRole("button").getByText("Add to Cart");
@@ -17,9 +22,12 @@ test('buy-ucg', async ({ page, request }) => {
     console.log("UCG currently sold out");
     expect(false).toBeTruthy();
   }
+
+  // Buy one
   await page.getByRole("button").getByText("Add to Cart").click();
   console.log("UCG in cart");
 
+  // And a USW
   await page.goto('https://store.ui.com/us/en/pro/category/switching-utility/collections/pro-ultra/products/usw-ultra-60w');
   await page.getByRole("button").getByText("Add to Cart").click();
   console.log("USW in cart");
@@ -76,6 +84,7 @@ test('buy-ucg', async ({ page, request }) => {
   await page.getByText("Pay Now", {exact: true}).click();
   console.log("Paid");
 
+  // Wait for the payment to go through
   var payresponse = await page.waitForResponse(response => response.url().startsWith('https://api.stripe.com/v1/payment_intents/') && response.url().endsWith('/confirm'));
   if (payresponse.status() < 200 || payresponse.status() >= 300)
   {
@@ -83,7 +92,8 @@ test('buy-ucg', async ({ page, request }) => {
     expect(false).toBeTruthy();
   }
 
-  var response = await request.put("https://ucgbot.azurewebsites.net/api/bought");
-  console.log("UCG purchase complete: " + response.status());
+  // Save the fact that we bought the UCG
+  await fs.writeFileSync('state/bought.txt', 'true');
+  console.log("UCG purchase complete");
   expect(true).toBeTruthy();
 });

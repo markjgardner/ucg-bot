@@ -25,10 +25,14 @@ test('buy-ucg', async ({ page, request }) => {
   console.log("USW in cart");
 
   await page.goto("https://store.ui.com/us/en/checkout");
+  console.log("Checking out");
   await page.getByText("Check Out").click();
   await page.getByRole("button").getByText("Sign In").click();
+  console.log("Signed In");
   await page.getByText("Continue to Shipping").click();
+  console.log("Shipping");
   await page.getByText("Continue to Payment").click();
+  console.log("Payment");
 
   var frame = await page.getByTitle("Secure card number input frame").frameLocator(":scope");
   if (frame != null)

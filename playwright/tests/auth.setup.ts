@@ -6,6 +6,7 @@ setup('authenticate', async ({ page }) => {
   var username = process.env.USERNAME || '';
   var password = process.env.PASSWORD || '';
   // Perform authentication steps. Replace these actions with your own.
+  console.log("Authenticating as " + username);
   await page.goto('https://account.ui.com/login');
   await page.getByLabel('Email or Username').fill(username);
   await page.getByLabel('Password').fill(password);
@@ -19,4 +20,5 @@ setup('authenticate', async ({ page }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
+  console.log("Authentication complete");
 });

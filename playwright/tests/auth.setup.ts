@@ -5,9 +5,16 @@ const authFile = '.auth/user.json';
 setup('authenticate', async ({ page }) => {
   var username = process.env.USERNAME || '';
   var password = process.env.PASSWORD || '';
-  // Perform authentication steps. Replace these actions with your own.
-  console.log("Authenticating as " + username);
-  await page.goto('https://account.ui.com/login');
+  console.log("Starting authentication")
+  await page.goto('https://account.ui.com/');
+  if (await page.url() == 'https://account.ui.com/')
+  {
+    console.log("Stored session still authenticated");
+    expect(true).toBeTruthy();
+    return;
+  }
+  
+  console.log("Logging in as " + username);
   await page.getByLabel('Email or Username').fill(username);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign In' }).click();

@@ -20,7 +20,10 @@ export default defineConfig({
   projects: [
     {
       name: 'setup', 
-      testMatch: /.*\.setup\.ts/
+      testMatch: /.*\.setup\.ts/,
+      use: {
+        storageState: '.auth/user.json', 
+      }
     },
     {
       name: 'chromium',
